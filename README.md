@@ -13,7 +13,7 @@
 ## Usage example
 
 ```
-var T = require('smart-objects');
+var T = require('t-objects');
 
 var company = {
 	Departments: [
