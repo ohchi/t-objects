@@ -1,0 +1,18 @@
+{
+  "name": "t-objects",
+  "version": "0.0.0",
+  "description": "Declarative style JSON objects converter",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "ohchi",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "mocha": "^2.2.5"
+  },
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
+}
