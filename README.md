@@ -8,7 +8,7 @@
 
 ## Install
 
-`npm install smart-objects`
+`npm install t-objects`
 
 ## Usage example
 
