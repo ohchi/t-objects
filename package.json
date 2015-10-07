@@ -6,6 +6,10 @@
   "scripts": {
     "test": "mocha"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ohchi/t-objects.git"
+  },
   "author": "ohchi",
   "license": "MIT",
   "devDependencies": {
