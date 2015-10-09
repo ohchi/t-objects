@@ -1577,7 +1577,7 @@ describe('private API:', function(){
 				'A': 'A'
 			},
 			{ ':': true })).to.deep.equal({
-				a: { 'A': 'A' }
+				'A': 'A'
 			});
 			
 			done();
@@ -1626,9 +1626,7 @@ describe('private API:', function(){
 				'->': true,
 				':': 'a',
 				'$return': 'A'
-			}, { ':': true, $return: true })).to.deep.equal({
-				a: 'A'
-			});
+			}, { ':': true, $return: true })).to.deep.equal('A');
 			
 			done();
 		}); 
@@ -2042,6 +2040,52 @@ describe('private API:', function(){
 
 				expect(build(tobj, { $a: 1 })).to.deep.equal({});
 				expect(build(tobj, { $a: 2 })).to.deep.equal({ sub: 3 });
+				
+				done();
+			});
+		});
+	
+		describe('simple tests to convert array to multiinstance object', function(){
+			
+			it('should return multiinstance object', function(done){
+				
+				var arr = [ 'A', 'B', 'C' ];
+				
+				var t = compile({
+					'->': true,
+					$arr: ':external',
+					'{value,$i}': [ '$arr', function(arr){ return arr }],
+					':': [ '$i', function($i){ return $i + 1  }]
+				});
+				
+				expect(build(t, { $arr: arr })).to.deep.equal({
+					1: { value: 'A' },
+					2: { value: 'B' },
+					3: { value: 'C' }
+				});
+				expect(build(t, {})).to.deep.equal({});
+				
+				done();
+			});
+			
+			it('should return object (string instead of subobjects)', function(done){
+				
+				var arr = [ 'A', 'B', 'C' ];
+				
+				var t = compile({
+					'->': true,
+					$arr: ':external',
+					'{$value,$i}': [ '$arr', function(arr){ return arr }],
+					$return: [ '$value', function(val){ return val }],
+					':': [ '$i', function($i){ return $i + 1  }]
+				});
+				
+				expect(build(t, { $arr: arr })).to.deep.equal({
+					1: 'A',
+					2: 'B',
+					3: 'C'
+				});
+				expect(build(t, {})).to.be.undefined;
 				
 				done();
 			});
