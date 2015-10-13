@@ -4,6 +4,37 @@ var private = require('../lib/private.js')
   
 describe('private API:', function(){
 
+	
+	describe('stripDep:', function(){
+		
+		var stripDep = private.stripDep;
+		
+		it('a single test', function(done){
+			expect(stripDep('dep**')).to.equal('dep');
+			
+			done();
+		});
+	});
+
+	describe('stripDepsMap', function(){
+
+		var stripDepsMap = private.stripDepsMap;
+		
+		it('a single test', function(done){
+			expect(stripDepsMap({
+				a: true,
+				b: [ 'a*' ],
+				c: [ 'b**' ]
+			})).to.deep.equal({
+				a: true,
+				b: [ 'a' ],
+				c: [ 'b' ]
+			});
+			
+			done();
+		});
+	});
+	
 	describe('depk:', function(){
 		
 		it('correct deps map:', function(done){
@@ -27,7 +58,29 @@ describe('private API:', function(){
 			
 			done();
 		});
+/*		
+		it('deps map with mandatory and critical keys:', function(done){
 		
+			var depk = private.depk({
+			    d: [ '?', ':', 'c' ],
+			    '?': [ 'e', 'f' ],
+			    g: [ 'e', 'f' ],
+			    f: [ ':' ],
+			    e: true,
+			    ':': [ 'e' ],
+			    c: true
+			});
+			
+			expect(depk('d**')).to.equal(4);
+			expect(depk([ '?', 'g*' ])).to.equal(3);
+			expect(depk('f')).to.equal(2);
+			expect(depk(':')).to.equal(1);
+			expect(depk('e')).to.equal(0);
+			expect(depk('c')).to.equal(0);
+			
+			done();
+		});
+*/		
 		it('cyclic deps map', function(done){
 		
 			var depk = private.depk({
@@ -87,6 +140,7 @@ describe('private API:', function(){
 			expect(isSpecialKey('->:?')).to.be.false;
 			expect(isSpecialKey('{->:?}')).to.be.false;
 			expect(isSpecialKey('a')).to.be.false;
+			expect(isSpecialKey('a*')).to.be.false;
 			done();
 		});
 	});
@@ -104,6 +158,7 @@ describe('private API:', function(){
 			expect(isQueueKey('->:?')).to.be.false;
 			expect(isQueueKey('{->:?}')).to.be.false;
 			expect(isQueueKey('a')).to.be.false;
+			expect(isQueueKey('a*')).to.be.false;
 			done();
 		});
 	});
@@ -170,6 +225,7 @@ describe('private API:', function(){
 			expect(parseVarietyKey(' 	  	 a 	 ,	 b	 }	 ')).to.be.null;
 			expect(parseVarietyKey('{a]}')).to.be.null;
 			expect(parseVarietyKey(' { "a" } ' )).to.be.null;
+			expect(parseVarietyKey('{a*}')).to.be.null;
 			done();
 		});
 	});
@@ -868,6 +924,58 @@ describe('private API:', function(){
 			
 			done();
 		});
+		
+		it('should properly strip asterisks from dependencies', function(done){
+			expect(callFn({
+				a: 'A',
+				b: 'B',
+				c: 'C'
+			},[ 'a*', 'b**', 'c*', function(a, b, c){
+				return a + b + c;
+			}])).to.equal('ABC');
+			
+			done();
+		});
+		
+		it('should call callback on undefined optional dependency', function(done){
+			expect(callFn({
+				a: 'A',
+				c: 'C'
+			},[ 'a', 'b', 'c', function(a, b, c){
+				return a + b + c;
+			}])).to.equal('AundefinedC');
+			
+			done();
+		});
+		
+		it('should return undefined on undefined mandatory dependency', function(done){
+			expect(callFn({
+				a: 'A',
+				c: 'C'
+			},[ 'a', 'b*', 'c', function(a, b, c){
+				return a + b + c;
+			}])).to.be.undefined;
+			
+			done();
+		});
+		
+		it('should through exception on undefined critical dependency', function(done){
+			try {
+				callFn({
+					a: 'A',
+					c: 'C'
+				},[ 'a', 'b**', 'c', function(a, b, c){
+					return a + b + c;
+				}]);
+				assert.ok(false);
+			} catch (e) {
+				expect(e.code).to.equal('callfn_cdepundef');
+				expect(e.dep).to.equal('b');
+				expect(e.message).to.equal('Undefined critical dependency "b" for key: ');
+			}
+			
+			done();
+		});
 	});
 	
 	describe('addVariety:', function(){
@@ -1056,7 +1164,28 @@ describe('private API:', function(){
 				]);
 				
 				done();
+			});			
+		
+			it('should rethrough exception on undefined critical dependency with additional key property', function(done){
+				try {
+					addVariety([
+						{ a: 1, b: 2 },
+						{ a: 2, b: 3 },
+						{ a: 3, b: 4 }
+					], [ 'c' ], [ 'd**', function(d){
+						return d;
+					}]);
+					assert.ok(false);
+				} catch (e) {
+					expect(e.code).to.equal('adding_cdepundef');
+					expect(e.dep).to.equal('d');
+					expect(e.message).to.equal('Undefined critical dependency "d" for key: ');
+					expect(e.key).to.equal('{c}');
+				}
+				
+				done();
 			});
+			
 		});
 		
 		describe('object', function(){
@@ -1182,6 +1311,20 @@ describe('private API:', function(){
 			
 			done();
 		});
+		
+		it('should rethrough exception on undefined critical dependency with additional key property', function(done){
+			try {
+				addProperty({ a: 1 }, 'b', [ 'a', 'c**', function(a, c){ return a + c	}]);
+				assert.ok(false);
+			} catch (e) {
+				expect(e.code).to.equal('adding_cdepundef');
+				expect(e.dep).to.equal('c');
+				expect(e.message).to.equal('Undefined critical dependency "c" for key: ');
+				expect(e.key).to.equal('b');
+			}
+			
+			done();
+		});
 	});
 	
 	describe('addConstant:', function(){
@@ -1199,6 +1342,16 @@ describe('private API:', function(){
 				{ a: 3, b: 10 }
 			]);
 			
+			expect(addConstant([
+				{ a: 1 },
+				{ a: 2 },
+				{ a: 3 }
+			], 'b', undefined)).to.deep.equal([
+				{ a: 1 },
+				{ a: 2 },
+				{ a: 3 }
+			]);
+
 			done();
 		});
 		
@@ -1211,7 +1364,7 @@ describe('private API:', function(){
 		});
 	});
 
-	describe('clean', function(){
+	describe('clean:', function(){
 		
 		var clean = private.clean;
 
@@ -1546,10 +1699,29 @@ describe('private API:', function(){
 		});
 	});
 	
-	describe('postBuild', function(){
+	describe('postBuild:', function(){
 		
 		var postBuild = private.postBuild;
 		
+		describe('empty collections:', function(){
+
+			it('template with variety key which has not expanded because of abscenсe input data should return []', function(done){
+				expect(postBuild({
+					'->': true
+				}, { '-->': [[ 'a' ]]})).to.deep.equal([]);
+				
+				done();
+			}); 
+	
+			it('template with variety key and `:` key which has not expanded because of abscenсe input data should return {}', function(done){
+				expect(postBuild({
+					'->': true
+				}, { '-->': [[ 'a' ]], ':': 'b' })).to.deep.equal({});
+				
+				done();
+			});
+		});
+				
 		it('case 1', function(done){
 			expect(postBuild([
 				{
@@ -1577,7 +1749,9 @@ describe('private API:', function(){
 				'A': 'A'
 			},
 			{ ':': true })).to.deep.equal({
-				'A': 'A'
+				a: {
+					'A': 'A'
+				}
 			});
 			
 			done();
@@ -1626,7 +1800,7 @@ describe('private API:', function(){
 				'->': true,
 				':': 'a',
 				'$return': 'A'
-			}, { ':': true, $return: true })).to.deep.equal('A');
+			}, { ':': true, $return: true })).to.deep.equal({ a: 'A' });
 			
 			done();
 		}); 
@@ -2055,7 +2229,7 @@ describe('private API:', function(){
 					'->': true,
 					$arr: ':external',
 					'{value,$i}': [ '$arr', function(arr){ return arr }],
-					':': [ '$i', function($i){ return $i + 1  }]
+					':': [ '$i*', function($i){ return $i + 1  }]
 				});
 				
 				expect(build(t, { $arr: arr })).to.deep.equal({
@@ -2063,12 +2237,11 @@ describe('private API:', function(){
 					2: { value: 'B' },
 					3: { value: 'C' }
 				});
-				expect(build(t, {})).to.deep.equal({});
 				
 				done();
 			});
 			
-			it('should return object (string instead of subobjects)', function(done){
+			it('should return object (strings instead of subobjects)', function(done){
 				
 				var arr = [ 'A', 'B', 'C' ];
 				
@@ -2085,7 +2258,40 @@ describe('private API:', function(){
 					2: 'B',
 					3: 'C'
 				});
-				expect(build(t, {})).to.be.undefined;
+				
+				done();
+			});
+		});
+
+		describe('empty collections', function(){
+			
+			it('should return empty object', function(done){
+				
+				var arr = [ 'A', 'B', 'C' ];
+				
+				var t = compile({
+					'->': true,
+					$arr: ':external',
+					'{value,$i}': [ '$arr', function(arr){ return arr }],
+					':': [ '$i*', function($i){ return $i + 1  }]
+				});
+
+				expect(build(t, {})).to.deep.equal({});
+				
+				done();
+			});
+			
+			it('should return empty array', function(done){
+				
+				var arr = [ 'A', 'B', 'C' ];
+				
+				var t = compile({
+					'->': true,
+					$arr: ':external',
+					'{value,$i}': [ '$arr', function(arr){ return arr }]
+				});
+
+				expect(build(t, {})).to.deep.equal([]);
 				
 				done();
 			});
@@ -2302,7 +2508,7 @@ describe('private API:', function(){
 			
 			it('templates tree', function(done){
 				var tobj = compile({
-					'->': [ ['$cityObj'], 'params' ],
+					'->': [ '$cityObj', 'params' ],
 					$world: ':external',
 					'{$countryObj}': [ '$world', function(w){ return w.countries }],
 					'{$cityObj}': [ '$countryObj', function(c){ return c.cities }],
@@ -2355,7 +2561,7 @@ describe('private API:', function(){
 
 		describe('error processing', function(){
 			
-			it('incorrect_value_for_variety_key', function(done){ 
+			it('Incorrect value for variety key', function(done){ 
 
 				try {
 					var tobj = compile({
@@ -2389,6 +2595,32 @@ describe('private API:', function(){
 					expect(e.code).to.equal('build_error');
 					expect(e.key).to.equal('L2.L3.L4.{b}');
 					expect(e.message).to.equal('Incorrect value for variety key: "L2.L3.L4.{b}"');
+				}
+
+				done();
+			});
+			
+			it('Undefined critical dependency', function(done){ 
+
+				try {
+					var tobj = compile({
+						L2: {
+							L3: {
+								L4: {
+									'->': true,
+									a: function(){ return 'A' },
+									c: function(){ return undefined },
+									'{b}': [ 'a', 'c**', function(a){ return !a }]
+								}
+							}
+						}
+					});
+					
+					build(tobj);
+					assert.ok(false);
+				} catch (e) {
+					expect(e.code).to.equal('build_error');
+					expect(e.message).to.equal('Undefined critical dependency "c" for key: "L2.L3.L4.{b}"');
 				}
 
 				done();

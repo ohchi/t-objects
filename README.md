@@ -165,3 +165,14 @@ template = T({
 
 
 * `[ 'key1', 'key2', ... keyN, function(key1, key2, ... keyN){ ... }]` **Property constructor.** `'key1', 'key2', ... keyN` - dependencies. This notation also works in singular forms: `[function(){...}]` and `function(){...}`
+
+### Property constructor notation
+
+* `[ 'key1', 'key2', ... 'keyN', function(key1, key2, ... keyN){ ... }]` **Property constructor.** 
+
+	`'key1', 'key2', ... 'keyN'` - dependencies. One may mark dependency as mandatory or critical.
+    
+    * `'key*'` - mandatory. In this case, if value of `key` is undefined, constructor will not be called.
+    * `'key**'` - critical. In this case, if value of `key` is undefined, `build_error` exception will be thrown.
+    
+    This notation also works in singular forms: `[function(){...}]` and `function(){...}`
