@@ -1,2 +1,2 @@
-require('./tests/private.js');
-require('./tests/public.js');
+require('./tests/private_api.js');
+require('./tests/public_api.js');

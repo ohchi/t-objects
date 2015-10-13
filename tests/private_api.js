@@ -1,4 +1,4 @@
-var private = require('../lib/private.js')
+var private = require('../lib/private_api.js')
   ,	expect = require('chai').expect
   ,	assert = require('chai').assert;
   
