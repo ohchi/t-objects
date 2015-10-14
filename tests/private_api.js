@@ -2170,6 +2170,47 @@ describe('private API:', function(){
 				done();
 			});
 			
+			it('dependent condition between 2 variety keys', function(done){
+				var data = {
+					L1: {
+						1: {
+							reject: true,
+							L2: {
+								1: {
+									a: 'A1'
+								},
+								2: {
+									a: 'A2'
+								}
+							}
+						},
+						2: {
+							reject: false,
+							L2: {
+								1: {
+									a: 'A3'
+								},
+								2: {
+									a: 'A4'
+								}
+							}
+						}
+					}
+				};
+				var tobj = compile({
+					'->': true,
+					$data: ':external',
+					'{L1}': [ '$data', function(d){ return d.L1 }],
+					'?': [ 'L1', function(l){ return !l.reject }],
+					'{L2}': [ 'L1', function(l){ return l.L2 }],
+					$return: [ 'L2', function(l){ return l.a }]
+				});
+
+				expect(build(tobj, { $data: data })).to.deep.equal([ 'A3', 'A4' ]);
+				
+				done();
+			});
+			
 			it('filter', function(done){
 				var tobj = compile({
 					'->': true,
