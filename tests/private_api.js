@@ -1702,28 +1702,29 @@ describe('private API:', function(){
 	describe('postBuild:', function(){
 		
 		var postBuild = private.postBuild;
+		var clean = private.clean;
 		
 		describe('empty collections:', function(){
 
 			it('template with variety key which has not expanded because of abscenсe input data should return []', function(done){
-				expect(postBuild({
+				expect(clean(postBuild({
 					'->': true
-				}, { '-->': [[ 'a' ]]})).to.deep.equal([]);
+				}, { '-->': [[ 'a' ]]}))).to.deep.equal([]);
 				
 				done();
 			}); 
 	
 			it('template with variety key and `:` key which has not expanded because of abscenсe input data should return {}', function(done){
-				expect(postBuild({
+				expect(clean(postBuild({
 					'->': true
-				}, { '-->': [[ 'a' ]], ':': 'b' })).to.deep.equal({});
+				}, { '-->': [[ 'a' ]], ':': 'b' }))).to.deep.equal({});
 				
 				done();
 			});
 		});
 				
 		it('case 1', function(done){
-			expect(postBuild([
+			expect(clean(postBuild([
 				{
 					'->': true,
 					':': 'a',
@@ -1734,7 +1735,7 @@ describe('private API:', function(){
 					':': 'b',
 					'B': 'B'
 				}
-			], { ':': true })).to.deep.equal({
+			], { ':': true }))).to.deep.equal({
 				a: { 'A': 'A' },
 				b: { 'B': 'B' }
 			});
@@ -1743,12 +1744,12 @@ describe('private API:', function(){
 		}); 
 		
 		it('case 1_1', function(done){
-			expect(postBuild({
+			expect(clean(postBuild({
 				'->': true,
 				':': 'a',
 				'A': 'A'
 			},
-			{ ':': true })).to.deep.equal({
+			{ ':': true }))).to.deep.equal({
 				a: {
 					'A': 'A'
 				}
@@ -1758,7 +1759,7 @@ describe('private API:', function(){
 		}); 
 		
 		it('case 2', function(done){
-			expect(postBuild([
+			expect(clean(postBuild([
 				{
 					'->': true,
 					'A': 'A'
@@ -1767,7 +1768,7 @@ describe('private API:', function(){
 					'->': true,
 					'B': 'B'
 				}
-			], {})).to.deep.equal([
+			], {}))).to.deep.equal([
 				{ 'A': 'A' },
 				{ 'B': 'B' }
 			]);
@@ -1776,7 +1777,7 @@ describe('private API:', function(){
 		}); 
 		
 		it('case 3', function(done){
-			expect(postBuild([
+			expect(clean(postBuild([
 				{
 					'->': true,
 					':': 'a',
@@ -1787,7 +1788,7 @@ describe('private API:', function(){
 					':': 'b',
 					'$return': 'B'
 				}
-			], { ':': true, $return: true })).to.deep.equal({
+			], { ':': true, $return: true }))).to.deep.equal({
 				a: 'A',
 				b: 'B'
 			});
@@ -1796,17 +1797,17 @@ describe('private API:', function(){
 		}); 
 		
 		it('case 3_1', function(done){
-			expect(postBuild({
+			expect(clean(postBuild({
 				'->': true,
 				':': 'a',
 				'$return': 'A'
-			}, { ':': true, $return: true })).to.deep.equal({ a: 'A' });
+			}, { ':': true, $return: true }))).to.deep.equal({ a: 'A' });
 			
 			done();
 		}); 
 		
 		it('case 4', function(done){
-			expect(postBuild([
+			expect(clean(postBuild([
 				{
 					'->': true,
 					'$return': 'A'
@@ -1815,18 +1816,18 @@ describe('private API:', function(){
 					'->': true,
 					'$return': 'B'
 				}
-			], { $return: true })).to.deep.equal([ 'A', 'B'	]);
+			], { $return: true }))).to.deep.equal([ 'A', 'B'	]);
 			
 			done();
 		}); 
 		
 		it('case 5', function(done){
-			expect(postBuild({
+			expect(clean(postBuild({
 				'->': true,
 				'$return': 'A'
 			}, {
 				$return: true
-			})).to.equal('A');
+			}))).to.equal('A');
 			
 			done();
 		}); 
@@ -2005,11 +2006,11 @@ describe('private API:', function(){
 					'->': [ 'L', 'child' ],
 					L: function(){ return 'L1' },
 					child: {
-						'->': [ 'child', 'L' ],
+						'->': true,
 						L: [ '$parent', 'child', function(p, c){ return p.L + c.L }],
 						child: {
 							'->': true,
-							L: [ '$parent', function(p){ return p.$parent.L + 'L3' }]
+							L: [ '$parent', function(p){ return p.$parent.L + 'L3' }],
 						}
 					}
 				});
@@ -2084,7 +2085,6 @@ describe('private API:', function(){
 					'->': [ 'child', '$child' ],
 					$child: {
 						'->': true,
-						L: function(){ return 'L1' }
 					},
 					child: {
 						'->': true,
@@ -2099,6 +2099,32 @@ describe('private API:', function(){
 					child: {
 						child: {
 							L: false
+						}
+					}
+				});
+				
+				done();
+			});
+			
+			it('all root children (even service keys) should be available through a root if a queue does allow it', function(done){
+				var tobj = compile({
+					'->': [ '$child', 'child' ],
+					$child: {
+						'->': true,
+					},
+					child: {
+						'->': true,
+						child: {
+							'->': true,
+							L: function(){ return !!this.$root.$child }
+						}
+					}
+				});
+
+				expect(build(tobj, {})).to.deep.equal({
+					child: {
+						child: {
+							L: true
 						}
 					}
 				});
