@@ -1732,12 +1732,17 @@ describe('private API:', function(){
 				},
 				{
 					'->': true,
-					':': 'b',
+					':': undefined,
 					'B': 'B'
+				},
+				{
+					'->': true,
+					':': 'c',
+					'C': 'C'
 				}
 			], { ':': true }))).to.deep.equal({
 				a: { 'A': 'A' },
-				b: { 'B': 'B' }
+				c: { 'C': 'C' }
 			});
 			
 			done();
@@ -1754,6 +1759,13 @@ describe('private API:', function(){
 					'A': 'A'
 				}
 			});
+			
+			expect(clean(postBuild({
+				'->': true,
+				':': undefined,
+				'A': 'A'
+			},
+			{ ':': true }))).to.deep.equal({});
 			
 			done();
 		}); 
@@ -1785,12 +1797,17 @@ describe('private API:', function(){
 				},
 				{
 					'->': true,
-					':': 'b',
+					':': undefined,
 					'$return': 'B'
+				},
+				{
+					'->': true,
+					':': 'c',
+					'$return': 'C'
 				}
 			], { ':': true, $return: true }))).to.deep.equal({
 				a: 'A',
-				b: 'B'
+				c: 'C'
 			});
 			
 			done();
@@ -1802,6 +1819,12 @@ describe('private API:', function(){
 				':': 'a',
 				'$return': 'A'
 			}, { ':': true, $return: true }))).to.deep.equal({ a: 'A' });
+			
+			expect(clean(postBuild({
+				'->': true,
+				':': undefined,
+				'$return': 'A'
+			}, { ':': true, $return: true }))).to.deep.equal({});
 			
 			done();
 		}); 
@@ -1831,6 +1854,7 @@ describe('private API:', function(){
 			
 			done();
 		}); 
+
 	});
 
 	describe('build:', function(){
