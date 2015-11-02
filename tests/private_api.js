@@ -1390,7 +1390,7 @@ describe('private API:', function(){
 			expect(clean({
 				'->': true,
 				'?': false,
-			})).to.be.null;
+			})).to.be.undefined;
 			
 			done();
 		});
@@ -2165,7 +2165,7 @@ describe('private API:', function(){
 					'?': false
 				});
 
-				expect(build(tobj, {})).to.be.null;
+				expect(build(tobj, {})).to.be.undefined;
 				
 				done();
 			});
@@ -2199,7 +2199,7 @@ describe('private API:', function(){
 					'?': [ 'b', function(b){ return b > 2 }]
 				});
 
-				expect(build(tobj, { $a: 1 })).to.be.null;
+				expect(build(tobj, { $a: 1 })).to.be.undefined;
 				expect(build(tobj, { $a: 2 })).to.deep.equal({ b: 3 });
 				
 				done();
