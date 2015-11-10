@@ -1917,6 +1917,38 @@ describe('private API:', function(){
 				done();
 			});
 	
+			it('case 1_1', function(done){
+				var tobj = compile({
+					'->': true,
+					'{value}': ':external'
+				});
+				
+				expect(build(tobj, {
+					'{value}': [ 1, 2, 3 ],
+				})).to.deep.equal([
+					{ value: 1 },
+					{ value: 2 },
+					{ value: 3 }
+				]);
+				
+				done();
+			});
+	
+			it('case 1_2', function(done){
+				var tobj = compile({
+					'->': true,
+					'{value}': [ 1, 2, 3 ]
+				});
+				
+				expect(build(tobj)).to.deep.equal([
+					{ value: 1 },
+					{ value: 2 },
+					{ value: 3 }
+				]);
+				
+				done();
+			});
+	
 			it('case 2 & case 5', function(done){
 				var tobj = compile({
 					'->': true,
