@@ -2385,7 +2385,7 @@ describe('private API:', function(){
 				done();
 			});
 			
-			it('should replace object key with constant `:` value', function(done){
+			it('should put object content into new object under key received form constant `:` value', function(done){
 				var t = compile({
 					'->': true,
 					':': 'key',
