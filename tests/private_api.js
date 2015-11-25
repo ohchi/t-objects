@@ -2384,6 +2384,25 @@ describe('private API:', function(){
 				
 				done();
 			});
+			
+			it('should replace object key with constant `:` value', function(done){
+				var t = compile({
+					'->': true,
+					':': 'key',
+					name1: 'value1',
+					name2: 'value2',
+					name3: 'value3'
+				});
+				expect(build(t)).to.deep.equal({
+					key: {
+						name1: 'value1',
+						name2: 'value2',
+						name3: 'value3'
+					}
+				});
+				
+				done();
+			});
 		});
 
 		describe('empty collections', function(){
