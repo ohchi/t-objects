@@ -383,57 +383,57 @@ describe('private API:', function(){
 
 	});
 
-	describe('typeOfObject', function(){
+	describe('isLiteralObject', function(){
 		
-		var typeOfObject = private.typeOfObject;
+		var isLiteralObject = private.isLiteralObject;
 		
-		it('should return "String" for String object', function(done){
+		it('should return false for String object', function(done){
 			
-			expect(typeOfObject(new String('my string'))).to.equal('String');
+			expect(isLiteralObject(new String('my string'))).to.be.false;
 			done();
 		});
 		
-		it('should return "Number" for Number object', function(done){
+		it('should return false for Number object', function(done){
 			
-			expect(typeOfObject(new Number(1))).to.equal('Number');
+			expect(isLiteralObject(new Number(1))).to.be.false;
 			done();
 		});
 		
-		it('should return "RegExp" for RegExp object', function(done){
+		it('should return false for RegExp object', function(done){
 			
-			expect(typeOfObject(new RegExp(/.*/))).to.equal('RegExp');
+			expect(isLiteralObject(new RegExp(/.*/))).to.be.false;
 			done();
 		});
 		
-		it('should return "Date" for Date object', function(done){
+		it('should return false for Date object', function(done){
 			
-			expect(typeOfObject(new Date())).to.equal('Date');
+			expect(isLiteralObject(new Date())).to.be.false;
 			done();
 		});
 		
-		it('should return "Function" for Function object', function(done){
+		it('should return false for Function object', function(done){
 			
-			expect(typeOfObject(function(){})).to.equal('Function');
+			expect(isLiteralObject(function(){})).to.be.false;
 			done();
 		});
 		
-		it('should return "Boolean" for Boolean object', function(done){
+		it('should return false for Boolean object', function(done){
 			
-			expect(typeOfObject(new Boolean(true))).to.equal('Boolean');
+			expect(isLiteralObject(new Boolean(true))).to.be.false;
 			done();
 		});
 		
-		it('should return "MyClass" for MyClass object', function(done){
+		it('should return false for MyClass object', function(done){
 			
 			function MyClass(){};
 			
-			expect(typeOfObject(new MyClass())).to.equal('MyClass');
+			expect(isLiteralObject(new MyClass())).to.be.false;
 			done();
 		});
 		
-		it('should return "Object" for singleton object', function(done){
+		it('should return true for literal object', function(done){
 			
-			expect(typeOfObject({})).to.equal('Object');
+			expect(isLiteralObject({})).to.be.true;
 			done();
 		});
 	});
