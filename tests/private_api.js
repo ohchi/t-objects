@@ -305,6 +305,7 @@ describe('private API:', function(){
 		var isOrdinaryKey = private.isOrdinaryKey;
 		
 		it('all tests in one', function(done){
+			expect(isOrdinaryKey('a.@')).to.be.true;
 			expect(isOrdinaryKey('a.$')).to.be.true;
 			expect(isOrdinaryKey('{a.$}')).to.be.false;
 			expect(isOrdinaryKey('[a.$]')).to.be.false;
